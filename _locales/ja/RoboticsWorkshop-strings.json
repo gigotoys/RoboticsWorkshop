@@ -31,9 +31,10 @@
     "RoboticsWorkshop.ColorPart.Custom1|block": "カスタム1",
     "RoboticsWorkshop.ColorPart.Custom2|block": "カスタム2",
     "RoboticsWorkshop.ColorPart.Custom3|block": "カスタム3",
-    "RoboticsWorkshop.ColorSensorRecord|block": "カラーセンサーで記録 %colorpart |赤",
+    "RoboticsWorkshop.ColorSensorRecord|block": "カラーセンサーで記録 %colorpart |として",
     "RoboticsWorkshop.ReadColorEqual|block": "読み取ったR %WriteRed|and G %WriteGreen|and B %WriteBlueに等しい %colorpart",
     "{id:group}Motor": "モーター",
     "{id:group}Ultrasonic Sensor": "超音波センサー",
     "{id:group}Color Sensor": "カラーセンサー"
 }
+
