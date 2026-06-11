@@ -1,8 +1,7 @@
 # RoboticsWorkshop
 ![Gigotools](icon.png)
 
-智高提供的積木方塊。
-Blocks provided by Gigo。
+Blocks provided by Thames & Kosmos for Robotics Workshop with Micro:Bit
 
 ## License
 
@@ -13,5 +12,5 @@ Blocks provided by Gigo。
 
 
 ```package
-RoboticsWorkshop=github:gigotoys/RoboticsWorkshop
+Gigotools=github:thamesandkosmos/RoboticsWorkshop
 ```

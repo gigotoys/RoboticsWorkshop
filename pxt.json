@@ -2,8 +2,8 @@
 {
     "name": "RoboticsWorkshop",
     "version": "0.0.0",
-    "description": "智高提供的積木方塊。Blocks provided by Gigo。",
-    "icon": "https://raw.githubusercontent.com/gigotoys/Gigo-tools/main/icon/230707.PNG",
+    "description": "Blocks provided by Thames & Kosmos for Robotics Workshop with Micro:Bit",
+    "icon": "",
     "license": "MIT",
     "dependencies": {
         "core": "*"
@@ -12,10 +12,9 @@
     "files": [
         "README.md",
         "main.ts",
-    "_locales/en/RoboticsWorkshop-strings.json",
+        "_locales/en/RoboticsWorkshop-strings.json",
        "_locales/zh-tw/RoboticsWorkshop-strings.json",
        "_locales/le/RoboticsWorkshop-strings.json",
-        "_locales/ja/RoboticsWorkshop-strings.json",
        "_locales/zh-cn/RoboticsWorkshop-strings.json"
 
     ],

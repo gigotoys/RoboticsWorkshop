@@ -1,5 +1,5 @@
 // 在這裡添加你的程式
-//% weight=0 color=#3CB371 icon="\uf2db" block="gigotools" groups='["Motor", "Ultrasound", "RGB LED", "Color Sensor"]'
+//% weight=0 color=#3CB371 icon="\uf2db" block="gigotools" groups='["Motor", "Ultrasound", "RGB LED", "Color Sensor", "Joystick"]'
 enum PingUnit {
     //% block="cm"
     Centimeters,
@@ -136,7 +136,7 @@ namespace RoboticsWorkshop {
     //% weight=100 blockGap=8
     //% trackArgs=0,2
     //% blockSetVariable=RGBLED
-    //% subcategory="Add on pack"
+    //% subcategory="Add on pack 1"
     //% group="RGB LED"
     export function RGBLED_create(pin: DigitalPin): HaloHd {
         let RGBLED = new HaloHd();
@@ -163,7 +163,7 @@ namespace RoboticsWorkshop {
          * Shows whole ZIP Halo display as a given color (range 0-255 for r, g, b). 
          * @param rgb RGB color of the LED
          */
-        //% subcategory="Add on pack"
+        //% subcategory="Add on pack 1"
         //% group="RGB LED"
         //% block="%RGBLED|show color %rgb=RGBLED_colors" 
         //% weight=99 blockGap=8
@@ -178,7 +178,7 @@ namespace RoboticsWorkshop {
         /**
          * Send all the changes to the ZIP Halo display.
          */
-        //% subcategory="Add on pack"
+        //% subcategory="Add on pack 1"
         //% group="RGB LED"
         /* blockId="kitronik_halo_hd_display_show" block="%RGBLED|show" blockGap=8 */
         //% weight=96
@@ -193,7 +193,7 @@ namespace RoboticsWorkshop {
          * Turn off all LEDs on the ZIP Halo display.
          * You need to call ``show`` to make the changes visible.
          */
-        //% subcategory="Add on pack"
+        //% subcategory="Add on pack 1"
         //% group="RGB LED"
         /* blockId="kitronik_halo_hd_display_clear" block="%RGBLED|clear" */
         //% weight=95 blockGap=8
@@ -205,7 +205,7 @@ namespace RoboticsWorkshop {
          * Set the brightness of the ZIP Halo display. This flag only applies to future show operation.
          * @param brightness a measure of LED brightness in 0-255. eg: 255
          */
-        //% subcategory="Add on pack"
+        //% subcategory="Add on pack 1"
         //% group="RGB LED"
         //% block="%RGBLED|set brightness %brightness" blockGap=8
         //% weight=92
@@ -264,7 +264,7 @@ namespace RoboticsWorkshop {
      * @param wavelength value between 470 and 625. eg: 500
      */
     //% group="RGB LED"
-    //% subcategory="Add on pack" 
+    //% subcategory="Add on pack 1" 
     //% weight=1 blockGap=8
     /* blockId="kitronik_halo_hd_wavelength" block="wavelength %wavelength|nm" */
     //% wavelength.min=470 wavelength.max=625
@@ -294,7 +294,7 @@ namespace RoboticsWorkshop {
      * Colours end up fully saturated. 
      * @param hue value between 0 and 360
      */
-    //% subcategory="Add on pack"
+    //% subcategory="Add on pack 1"
     //% group="RGB LED"
     //% weight=1 blockGap=8
     /* blockId="kitronik_halo_hd_hue" block="hue %hue" */
@@ -329,7 +329,7 @@ namespace RoboticsWorkshop {
      * @param green value of the green channel between 0 and 255. eg: 255
      * @param blue value of the blue channel between 0 and 255. eg: 255
      */
-    //% subcategory="Add on pack"
+    //% subcategory="Add on pack 1"
     //% group="RGB LED"
     //% weight=1 blockGap=8
     //% blockId="rgb" block="red %red|green %green|blue %blue"
@@ -340,7 +340,7 @@ namespace RoboticsWorkshop {
     /**
      * Gets the RGB value of a known color
     */
-    //% subcategory="Add on pack" 
+    //% subcategory="Add on pack 1" 
     //% group="RGB LED"
     //% weight=2 blockGap=8
     //% blockId="RGBLED_colors" block="%color" 
@@ -416,42 +416,94 @@ namespace RoboticsWorkshop {
         Shortest
     }
 
-    ////////////////////////////////
-    //          顏色感測器        //
-    ////////////////////////////////
-    //% weight=12
-    //% block="initialize color sensor"
-    //% subcategory="Add on pack" 
-    //% group="Color Sensor"
-    export function ColorSensorinit(): void {
-        pins.i2cWriteNumber(41, 33276, NumberFormat.UInt16BE, false)
-        pins.i2cWriteNumber(41, 32771, NumberFormat.UInt16BE, false)
+    let sensorAddr = -1
+    let currentSensor = 0
+    let sensorReady = false
+   
+
+    enum SensorType {
+        Unknown = 0,
+        TCS3400 = 1,
+        TCS3472 = 2
     }
-    /**
-    */
-    let nowReadColor = [0, 0, 0]
-    //% weight=12
-    //% block="color sensor read color"
-    //% subcategory="Add on pack"
-    //% group="Color Sensor"
-    export function ColorSensorReadColor(): void {
-        pins.i2cWriteNumber(41, 178, NumberFormat.Int8LE, false)
 
-        pins.i2cWriteNumber(41, 179, NumberFormat.Int8LE, false)
+    export enum Gain {
+        //% block="1x"
+        Gain1X = 0,
+        //% block="4x"
+        Gain4X = 1,
+        //% block="16x"
+        Gain16X = 2,
+        //% block="60x / 64x"
+        Gain60Or64X = 3
+    }
 
-        pins.i2cWriteNumber(41, 182, NumberFormat.Int8LE, true)
-        let TCS_RED = pins.i2cReadNumber(41, NumberFormat.UInt16BE, false)
-        pins.i2cWriteNumber(41, 184, NumberFormat.Int8LE, true)
-        let TCS_GREEN = pins.i2cReadNumber(41, NumberFormat.UInt16BE, false)
-        pins.i2cWriteNumber(41, 186, NumberFormat.Int8LE, true)
-        let TCS_BLUE = pins.i2cReadNumber(41, NumberFormat.UInt16BE, false)
-        TCS_RED = Math.round(Math.map(TCS_RED, 0, 65535, 0, 255))
-        TCS_GREEN = Math.round(Math.map(TCS_GREEN, 0, 65535, 0, 255))
-        TCS_BLUE = Math.round(Math.map(TCS_BLUE, 0, 65535, 0, 255))
-        nowReadColor = [TCS_RED, TCS_GREEN, TCS_BLUE]
+    export enum DetectedSensor {
+        //% block="unknown"
+        Unknown = 0,
+        //% block="TCS3400"
+        TCS3400 = 1,
+        //% block="TCS3472"
+        TCS3472 = 2
+    }
+
+    export enum DetectedColor {
+        //% block="unknown"
+        Unknown = 0,
+        //% block="black"
+        Black = 1,
+        //% block="white"
+        White = 2,
+        //% block="red"
+        Red = 3,
+        //% block="green"
+        Green = 4,
+        //% block="yellow"
+        Yellow = 5,
+        //% block="blue"
+        Blue = 6,
+        //% block="purple"
+        Purple = 7
     }
     /**
    */
+  ////////////////////////////////
+    //          顏色感測器        //
+    ////////////////////////////////
+  // ==============================
+    //顏色感測器初始化
+    // ==============================
+    //% weight=12
+    //% block="initialize color sensor"
+    //% subcategory="Add on pack 1" 
+    //% group="Color Sensor"
+    export function ColorSensorinit(): void {
+        sensorReady = false
+        sensorAddr = -1
+        currentSensor = SensorType.Unknown
+
+        // 固定參數（不顯示在積木）
+        let gain = Gain.Gain16X
+        let integration = 150
+
+        currentSensor = detectSensor()
+
+        if (currentSensor == SensorType.TCS3400) {
+            tcs3400Init(sensorAddr, gain, integration)
+            sensorReady = true
+        }
+        else if (currentSensor == SensorType.TCS3472) {
+            tcs3472Init(sensorAddr, gain, integration)
+            sensorReady = true
+        }
+    }
+    /**
+   */
+    // ==============================
+    // 顏色感測器讀取 通道數值
+    // ==============================
+
+
     export enum Channel {
         //% block="R"
         Red = 1,
@@ -460,37 +512,88 @@ namespace RoboticsWorkshop {
         //% block="B"
         Blue = 3
     }
-    //% weight=12
-    //% block="color sensor read RGB %channel |channel"
-    //% subcategory="Add on pack"
+
+    //% weight=14
+    //% block="color sensor read RGB %channel channel"
+    //% subcategory="Add on pack 1"
     //% group="Color Sensor"
-    export function ColorSensorRead(channel: Channel = 1): number {
-        pins.i2cWriteNumber(41, 178, NumberFormat.Int8LE, false)
+    export function ColorSensorRead(channel: Channel = Channel.Red): number {
 
-        pins.i2cWriteNumber(41, 179, NumberFormat.Int8LE, false)
+        if (!sensorReady) return 0
 
-        pins.i2cWriteNumber(41, 182, NumberFormat.Int8LE, true)
-        let TCS_RED = pins.i2cReadNumber(41, NumberFormat.UInt16BE, false)
-        pins.i2cWriteNumber(41, 184, NumberFormat.Int8LE, true)
-        let TCS_GREEN = pins.i2cReadNumber(41, NumberFormat.UInt16BE, false)
-        pins.i2cWriteNumber(41, 186, NumberFormat.Int8LE, true)
-        let TCS_BLUE = pins.i2cReadNumber(41, NumberFormat.UInt16BE, false)
+        let value = 0
 
-        let RdCl = 0
         switch (channel) {
-            case 1:
-                RdCl = Math.round(Math.map(TCS_RED, 0, 65535, 0, 255))
-                break;
-            case 2:
-                RdCl = Math.round(Math.map(TCS_GREEN, 0, 65535, 0, 255))
-                break;
-            case 3:
-                RdCl = Math.round(Math.map(TCS_BLUE, 0, 65535, 0, 255))
-                break;
+            case Channel.Red:
+                value = readRedInternal()
+                break
+
+            case Channel.Green:
+                value = readGreenInternal()
+                break
+
+            case Channel.Blue:
+                value = readBlueInternal()
+                break
         }
 
-        return RdCl
+        // ⭐ 關鍵：轉換 16bit → 8bit
+        value = Math.round(Math.map(value, 0, 65535, 0, 255))
+
+        // ⭐ 保險（避免超界）
+        if (value < 0) value = 0
+        if (value > 255) value = 255
+
+        return value
     }
+    /**
+   */
+    // ==============================
+    //顏顏色感測器讀取顏色數值
+    // ==============================
+    let nowReadColor = [0, 0, 0]
+
+    //% weight=13
+    //% block="color sensor read color"
+    //% subcategory="Add on pack 1"
+    //% group="Color Sensor"
+    export function ColorSensorReadColor(): void {
+
+        if (!sensorReady) return
+
+        // ✅ 用統一底層（自動判斷 3400 / 3472）
+        let TCS_RED = readRedInternal()
+        let TCS_GREEN = readGreenInternal()
+        let TCS_BLUE = readBlueInternal()
+
+
+        // ⭐ 防呆：避免讀到 0 就亂寫
+        if (TCS_RED == 0 && TCS_GREEN == 0 && TCS_BLUE == 0) {
+            return
+        }
+
+        // ⭐ 標準化 0~255
+        TCS_RED = Math.round(Math.map(TCS_RED, 0, 65535, 0, 255))
+        TCS_GREEN = Math.round(Math.map(TCS_GREEN, 0, 65535, 0, 255))
+        TCS_BLUE = Math.round(Math.map(TCS_BLUE, 0, 65535, 0, 255))
+
+        // ⭐ 限制範圍
+        TCS_RED = Math.clamp(0, 255, TCS_RED)
+        TCS_GREEN = Math.clamp(0, 255, TCS_GREEN)
+        TCS_BLUE = Math.clamp(0, 255, TCS_BLUE)
+
+        // ⭐ 更新全域變數（重點）
+        nowReadColor[0] = TCS_RED
+        nowReadColor[1] = TCS_GREEN
+        nowReadColor[2] = TCS_BLUE
+    }
+    /**
+   */
+    // ==============================
+    //顏顏色感測器紀錄顏色數值
+    // ==============================
+
+
     export enum ColorPart {
         //% block="Red"
         Red = 1,
@@ -510,6 +613,9 @@ namespace RoboticsWorkshop {
         Custom3 = 8
     }
 
+    // ==============================
+    // Storage
+    // ==============================
     let ReadRedColor = [0, 0, 0]
     let ReadGreenColor = [0, 0, 0]
     let ReadBlueColor = [0, 0, 0]
@@ -519,174 +625,481 @@ namespace RoboticsWorkshop {
     let ReadCustom2Color = [0, 0, 0]
     let ReadCustom3Color = [0, 0, 0]
 
-    //% weight=12
-    //% block="color sensor record %colorpart |"
-    //% subcategory="Add on pack"
+    // ==============================
+    // Record Function
+    // ==============================
+
+    //% weight=15
+    //% block="color sensor record %colorpart"
+    //% subcategory="Add on pack 1"
     //% group="Color Sensor"
-    export function ColorSensorRecord(colorpart: ColorPart = 1): void {
-        pins.i2cWriteNumber(41, 178, NumberFormat.Int8LE, false)
+    export function ColorSensorRecord(colorpart: ColorPart = ColorPart.Red): void {
 
-        pins.i2cWriteNumber(41, 179, NumberFormat.Int8LE, false)
+        if (!sensorReady) return
 
-        pins.i2cWriteNumber(41, 182, NumberFormat.Int8LE, true)
-        let TCS_RED = pins.i2cReadNumber(41, NumberFormat.UInt16BE, false)
-        pins.i2cWriteNumber(41, 184, NumberFormat.Int8LE, true)
-        let TCS_GREEN = pins.i2cReadNumber(41, NumberFormat.UInt16BE, false)
-        pins.i2cWriteNumber(41, 186, NumberFormat.Int8LE, true)
-        let TCS_BLUE = pins.i2cReadNumber(41, NumberFormat.UInt16BE, false)
+        // ✅ 用統一底層（自動判斷 3400 / 3472）
+        let TCS_RED = readRedInternal()
+        let TCS_GREEN = readGreenInternal()
+        let TCS_BLUE = readBlueInternal()
+
+
+        // ---- Normalize 0~255 ----
         TCS_RED = Math.round(Math.map(TCS_RED, 0, 65535, 0, 255))
         TCS_GREEN = Math.round(Math.map(TCS_GREEN, 0, 65535, 0, 255))
         TCS_BLUE = Math.round(Math.map(TCS_BLUE, 0, 65535, 0, 255))
+
+        // ---- Clamp safety ----
+        TCS_RED = Math.clamp(0, 255, TCS_RED)
+        TCS_GREEN = Math.clamp(0, 255, TCS_GREEN)
+        TCS_BLUE = Math.clamp(0, 255, TCS_BLUE)
+
+        let rgb = [TCS_RED, TCS_GREEN, TCS_BLUE]
+
+        // ---- Store by category ----
         switch (colorpart) {
-            case 1:
-                ReadRedColor = [TCS_RED, TCS_GREEN, TCS_BLUE]
-                break;
-            case 2:
-                ReadGreenColor = [TCS_RED, TCS_GREEN, TCS_BLUE]
-                break;
-            case 3:
-                ReadBlueColor = [TCS_RED, TCS_GREEN, TCS_BLUE]
-                break;
-            case 4:
-                ReadYellowColor = [TCS_RED, TCS_GREEN, TCS_BLUE]
-                break;
-            case 5:
-                ReadPurpleColor = [TCS_RED, TCS_GREEN, TCS_BLUE]
-                break;
-            case 6:
-                ReadCustom1Color = [TCS_RED, TCS_GREEN, TCS_BLUE]
-                break;
-            case 7:
-                ReadCustom2Color = [TCS_RED, TCS_GREEN, TCS_BLUE]
-                break;
-            case 8:
-                ReadCustom3Color = [TCS_RED, TCS_GREEN, TCS_BLUE]
-                break;
+
+            case ColorPart.Red:
+                ReadRedColor = rgb
+                break
+
+            case ColorPart.Green:
+                ReadGreenColor = rgb
+                break
+
+            case ColorPart.Blue:
+                ReadBlueColor = rgb
+                break
+
+            case ColorPart.Yellow:
+                ReadYellowColor = rgb
+                break
+
+            case ColorPart.Purple:
+                ReadPurpleColor = rgb
+                break
+
+            case ColorPart.Custom1:
+                ReadCustom1Color = rgb
+                break
+
+            case ColorPart.Custom2:
+                ReadCustom2Color = rgb
+                break
+
+            case ColorPart.Custom3:
+                ReadCustom3Color = rgb
+                break
         }
     }
-    let WriteRedColor = [0, 0, 0]
-    let WriteGreenColor = [0, 0, 0]
-    let WriteBlueColor = [0, 0, 0]
-    let WriteYellowColor = [0, 0, 0]
-    let WritePurpleColor = [0, 0, 0]
-    let WriteCustom1Color = [0, 0, 0]
-    let WriteCustom2Color = [0, 0, 0]
-    let WriteCustom3Color = [0, 0, 0]
-    let colorright = false
+    /**
+ */
+    // ==============================
+    //讀取R和G和B等於哪種顏色
+    // ==============================
     let forkrange = 5
+
+    // 取得對應儲存顏色
+    function getStoredColor(part: ColorPart): number[] {
+        switch (part) {
+            case ColorPart.Red: return ReadRedColor
+            case ColorPart.Green: return ReadGreenColor
+            case ColorPart.Blue: return ReadBlueColor
+            case ColorPart.Yellow: return ReadYellowColor
+            case ColorPart.Purple: return ReadPurpleColor
+            case ColorPart.Custom1: return ReadCustom1Color
+            case ColorPart.Custom2: return ReadCustom2Color
+            case ColorPart.Custom3: return ReadCustom3Color
+        }
+        return [0, 0, 0]
+    }
+
     //% weight=99 blockGap=8
-    //% block="read R %WriteRed|and G %WriteGreen|and B %WriteBlue equal to %colorpart|"
+    //% block="read R %WriteRed|and G %WriteGreen|and B %WriteBlue equal to %colorpart"
     //% WriteRed.min=0 WriteRed.max=255
     //% WriteGreen.min=0 WriteGreen.max=255
     //% WriteBlue.min=0 WriteBlue.max=255
-    //% subcategory="Add on pack"
+    //% subcategory="Add on pack 1"
     //% group="Color Sensor"
-    export function ReadColorEqual(WriteRed: number, WriteGreen: number, WriteBlue: number, colorpart: ColorPart = 1): boolean {
-        switch (colorpart) {
-            case 1:
-                WriteRedColor = [WriteRed, WriteGreen, WriteBlue];
-                if ((Math.abs(ReadRedColor[0] - nowReadColor[0]) < forkrange) && (Math.abs(ReadRedColor[1] - nowReadColor[1]) < forkrange) && (Math.abs(ReadRedColor[2] - nowReadColor[2]) < forkrange)) {
-                    colorright = true
-                }
-                else if ((Math.abs(WriteRedColor[0] - nowReadColor[0]) < forkrange) && (Math.abs(WriteRedColor[1] - nowReadColor[1]) < forkrange) && (Math.abs(WriteRedColor[2] - nowReadColor[2]) < forkrange)) {
-                    colorright = true
-                }
-                else {
-                    colorright = false
-                }
-                break;
-            case 2:
-                WriteGreenColor = [WriteRed, WriteGreen, WriteBlue];
-                if ((Math.abs(ReadGreenColor[0] - nowReadColor[0]) < forkrange) && (Math.abs(ReadGreenColor[1] - nowReadColor[1]) < forkrange) && (Math.abs(ReadGreenColor[2] - nowReadColor[2]) < forkrange)) {
-                    colorright = true
-                }
-                else if ((Math.abs(WriteGreenColor[0] - nowReadColor[0]) < forkrange) && (Math.abs(WriteGreenColor[1] - nowReadColor[1]) < forkrange) && (Math.abs(WriteGreenColor[2] - nowReadColor[2]) < forkrange)) {
-                    colorright = true
-                }
-                else {
-                    colorright = false
-                }
-                break;
-            case 3:
-                WriteBlueColor = [WriteRed, WriteGreen, WriteBlue];
-                if ((Math.abs(ReadBlueColor[0] - nowReadColor[0]) < forkrange) && (Math.abs(ReadBlueColor[1] - nowReadColor[1]) < forkrange) && (Math.abs(ReadBlueColor[2] - nowReadColor[2]) < forkrange)) {
-                    colorright = true
-                }
-                else if ((Math.abs(WriteBlueColor[0] - nowReadColor[0]) < forkrange) && (Math.abs(WriteBlueColor[1] - nowReadColor[1]) < forkrange) && (Math.abs(WriteBlueColor[2] - nowReadColor[2]) < forkrange)) {
-                    colorright = true
-                }
-                else {
-                    colorright = false
-                }
-                break;
-            case 4:
-                WriteYellowColor = [WriteRed, WriteGreen, WriteBlue];
-                if ((Math.abs(ReadYellowColor[0] - nowReadColor[0]) < forkrange) && (Math.abs(ReadYellowColor[1] - nowReadColor[1]) < forkrange) && (Math.abs(ReadYellowColor[2] - nowReadColor[2]) < forkrange)) {
-                    colorright = true
-                }
-                else if ((Math.abs(WriteYellowColor[0] - nowReadColor[0]) < forkrange) && (Math.abs(WriteYellowColor[1] - nowReadColor[1]) < forkrange) && (Math.abs(WriteYellowColor[2] - nowReadColor[2]) < forkrange)) {
-                    colorright = true
-                }
-                else {
-                    colorright = false
-                }
-                break;
+    export function ReadColorEqual(
+        WriteRed: number,
+        WriteGreen: number,
+        WriteBlue: number,
+        colorpart: ColorPart = ColorPart.Red
+    ): boolean {
 
-            case 5:
-                WritePurpleColor = [WriteRed, WriteGreen, WriteBlue];
-                if ((Math.abs(ReadPurpleColor[0] - nowReadColor[0]) < forkrange) && (Math.abs(ReadPurpleColor[1] - nowReadColor[1]) < forkrange) && (Math.abs(ReadPurpleColor[2] - nowReadColor[2]) < forkrange)) {
-                    colorright = true
-                }
-                else if ((Math.abs(WritePurpleColor[0] - nowReadColor[0]) < forkrange) && (Math.abs(WritePurpleColor[1] - nowReadColor[1]) < forkrange) && (Math.abs(WritePurpleColor[2] - nowReadColor[2]) < forkrange)) {
-                    colorright = true
-                }
-                else {
-                    colorright = false
-                }
-                break;
-            case 6:
-                WriteCustom1Color = [WriteRed, WriteGreen, WriteBlue];
-                if ((Math.abs(ReadCustom1Color[0] - nowReadColor[0]) < forkrange) && (Math.abs(ReadCustom1Color[1] - nowReadColor[1]) < forkrange) && (Math.abs(ReadCustom1Color[2] - nowReadColor[2]) < forkrange)) {
-                    colorright = true
-                }
-                else if ((Math.abs(WriteCustom1Color[0] - nowReadColor[0]) < forkrange) && (Math.abs(WriteCustom1Color[1] - nowReadColor[1]) < forkrange) && (Math.abs(WriteCustom1Color[2] - nowReadColor[2]) < forkrange)) {
-                    colorright = true
-                }
-                else {
-                    colorright = false
-                }
-                break;
-            case 7:
-                WriteCustom2Color = [WriteRed, WriteGreen, WriteBlue];
-                if ((Math.abs(ReadCustom2Color[0] - nowReadColor[0]) < forkrange) && (Math.abs(ReadCustom2Color[1] - nowReadColor[1]) < forkrange) && (Math.abs(ReadCustom2Color[2] - nowReadColor[2]) < forkrange)) {
-                    colorright = true
-                }
-                else if ((Math.abs(WriteCustom2Color[0] - nowReadColor[0]) < forkrange) && (Math.abs(WriteCustom2Color[1] - nowReadColor[1]) < forkrange) && (Math.abs(WriteCustom2Color[2] - nowReadColor[2]) < forkrange)) {
-                    colorright = true
-                }
-                else {
-                    colorright = false
-                }
-                break;
-            case 8:
-                WriteCustom3Color = [WriteRed, WriteGreen, WriteBlue];
-                if ((Math.abs(ReadCustom3Color[0] - nowReadColor[0]) < forkrange) && (Math.abs(ReadCustom3Color[1] - nowReadColor[1]) < forkrange) && (Math.abs(ReadCustom3Color[2] - nowReadColor[2]) < forkrange)) {
-                    colorright = true
-                }
-                else if ((Math.abs(WriteCustom3Color[0] - nowReadColor[0]) < forkrange) && (Math.abs(WriteCustom3Color[1] - nowReadColor[1]) < forkrange) && (Math.abs(WriteCustom3Color[2] - nowReadColor[2]) < forkrange)) {
-                    colorright = true
-                }
-                else {
-                    colorright = false
-                }
-                break;
-        }
-        if (colorright == true) {
-            return true
-        }
-        else {
-            return false
-        }
+        // ⭐ 先更新目前讀值（關鍵！）
+        ColorSensorReadColor()
+
+        let stored = getStoredColor(colorpart)
+        let input = [WriteRed, WriteGreen, WriteBlue]
+
+        // ⭐ 比對「記錄顏色」
+        let matchStored =
+            Math.abs(stored[0] - nowReadColor[0]) < forkrange &&
+            Math.abs(stored[1] - nowReadColor[1]) < forkrange &&
+            Math.abs(stored[2] - nowReadColor[2]) < forkrange
+
+        // ⭐ 比對「輸入顏色」
+        let matchInput =
+            Math.abs(input[0] - nowReadColor[0]) < forkrange &&
+            Math.abs(input[1] - nowReadColor[1]) < forkrange &&
+            Math.abs(input[2] - nowReadColor[2]) < forkrange
+
+        return matchStored || matchInput
+    }
+    /**
+*/
+     // ==============================
+    //TCS3400和TCS3472晶片辨識及I2C讀取 
+    // ==============================
+    // ----------------------------------------------
+
+    function i2cWrite8(addr: number, reg: number, value: number): void {
+        pins.i2cWriteBuffer(addr, pins.createBufferFromArray([reg, value]))
     }
 
+    function i2cRead8(addr: number, reg: number): number {
+        pins.i2cWriteNumber(addr, reg, NumberFormat.UInt8BE, true)
+        return pins.i2cReadNumber(addr, NumberFormat.UInt8BE, false)
+    }
+
+    function i2cRead16LE(addr: number, reg: number): number {
+        pins.i2cWriteNumber(addr, reg, NumberFormat.UInt8BE, true)
+        let buf = pins.i2cReadBuffer(addr, 2, false)
+        return buf[0] | (buf[1] << 8)
+    }
+
+    function clamp(v: number, lo: number, hi: number): number {
+        if (v < lo) return lo
+        if (v > hi) return hi
+        return v
+    }
+
+    function colorDistance(rn: number, gn: number, bn: number, rr: number, rg: number, rb: number): number {
+        let dr = rn - rr
+        let dg = gn - rg
+        let db = bn - rb
+        return dr * dr + dg * dg + db * db
+    }
+
+    // ---------------- TCS3400 ----------------
+
+    function tcs3400EncodeATime(ms: number): number {
+        let cycles = Math.round(ms * 100 / 278)
+        cycles = clamp(cycles, 1, 256)
+        return 256 - cycles
+    }
+
+    function tcs3400DetectAt(addr: number): boolean {
+        let id = 0
+        i2cWrite8(addr, 0x80, 0x03)
+        basic.pause(10)
+        id = i2cRead8(addr, 0x92)
+        return id == 0x90 || id == 0x93
+    }
+
+    function tcs3400Init(addr: number, gain: Gain, integrationMs: number): void {
+        i2cWrite8(addr, 0x80, 0x00)
+        basic.pause(3)
+        i2cWrite8(addr, 0x81, tcs3400EncodeATime(integrationMs))
+        i2cWrite8(addr, 0x8D, 0x40)
+        i2cWrite8(addr, 0x8F, gain)
+        i2cWrite8(addr, 0x90, 0x00)
+        i2cWrite8(addr, 0x80, 0x01)
+        basic.pause(3)
+        i2cWrite8(addr, 0x80, 0x03)
+        basic.pause(integrationMs + 10)
+    }
+
+    function tcs3400DataValid(addr: number): boolean {
+        let status = i2cRead8(addr, 0x93)
+        return (status & 0x01) != 0
+    }
+
+    function tcs3400ReadClear(addr: number): number {
+        return i2cRead16LE(addr, 0x94)
+    }
+
+    function tcs3400ReadRed(addr: number): number {
+        return i2cRead16LE(addr, 0x96)
+    }
+
+    function tcs3400ReadGreen(addr: number): number {
+        return i2cRead16LE(addr, 0x98)
+    }
+
+    function tcs3400ReadBlue(addr: number): number {
+        return i2cRead16LE(addr, 0x9A)
+    }
+
+    // ---------------- TCS3472 ----------------
+
+    function tcs3472Cmd(reg: number): number {
+        return 0x80 | reg
+    }
+
+    function tcs3472EncodeATime(ms: number): number {
+        let cycles = Math.round(ms / 2.4)
+        cycles = clamp(cycles, 1, 256)
+        return 256 - cycles
+    }
+
+    function tcs3472DetectAt(addr: number): boolean {
+        let id = 0
+        i2cWrite8(addr, tcs3472Cmd(0x00), 0x03)
+        basic.pause(10)
+        id = i2cRead8(addr, tcs3472Cmd(0x12))
+        return id == 0x44 || id == 0x4D
+    }
+
+    function tcs3472Init(addr: number, gain: Gain, integrationMs: number): void {
+        i2cWrite8(addr, tcs3472Cmd(0x00), 0x00)
+        basic.pause(3)
+        i2cWrite8(addr, tcs3472Cmd(0x01), tcs3472EncodeATime(integrationMs))
+        i2cWrite8(addr, tcs3472Cmd(0x0F), gain)
+        i2cWrite8(addr, tcs3472Cmd(0x00), 0x01)
+        basic.pause(3)
+        i2cWrite8(addr, tcs3472Cmd(0x00), 0x03)
+        basic.pause(integrationMs + 10)
+    }
+
+    function tcs3472DataValid(addr: number): boolean {
+        let status = i2cRead8(addr, tcs3472Cmd(0x13))
+        return (status & 0x01) != 0
+    }
+
+    function tcs3472ReadClear(addr: number): number {
+        return i2cRead16LE(addr, tcs3472Cmd(0x14))
+    }
+
+    function tcs3472ReadRed(addr: number): number {
+        return i2cRead16LE(addr, tcs3472Cmd(0x16))
+    }
+
+    function tcs3472ReadGreen(addr: number): number {
+        return i2cRead16LE(addr, tcs3472Cmd(0x18))
+    }
+
+    function tcs3472ReadBlue(addr: number): number {
+        return i2cRead16LE(addr, tcs3472Cmd(0x1A))
+    }
+
+    // ---------------- Detect / Common ----------------
+
+    function detectSensor(): number {
+        if (tcs3400DetectAt(0x39)) {
+            sensorAddr = 0x39
+            return SensorType.TCS3400
+        }
+
+        if (tcs3400DetectAt(0x29)) {
+            sensorAddr = 0x29
+            return SensorType.TCS3400
+        }
+
+        if (tcs3472DetectAt(0x29)) {
+            sensorAddr = 0x29
+            return SensorType.TCS3472
+        }
+
+        sensorAddr = -1
+        return SensorType.Unknown
+    }
+
+    function sensorDataValid(): boolean {
+        if (!sensorReady) return false
+
+        if (currentSensor == SensorType.TCS3400) {
+            return tcs3400DataValid(sensorAddr)
+        } else if (currentSensor == SensorType.TCS3472) {
+            return tcs3472DataValid(sensorAddr)
+        }
+        return false
+    }
+
+    function readClearInternal(): number {
+        if (!sensorReady) return 0
+        if (!sensorDataValid()) return 0
+
+        if (currentSensor == SensorType.TCS3400) {
+            return tcs3400ReadClear(sensorAddr)
+        } else if (currentSensor == SensorType.TCS3472) {
+            return tcs3472ReadClear(sensorAddr)
+        }
+        return 0
+    }
+
+    function readRedInternal(): number {
+        if (!sensorReady) return 0
+        if (!sensorDataValid()) return 0
+
+        if (currentSensor == SensorType.TCS3400) {
+            return tcs3400ReadRed(sensorAddr)
+        } else if (currentSensor == SensorType.TCS3472) {
+            return tcs3472ReadRed(sensorAddr)
+        }
+        return 0
+    }
+
+    function readGreenInternal(): number {
+        if (!sensorReady) return 0
+        if (!sensorDataValid()) return 0
+
+        if (currentSensor == SensorType.TCS3400) {
+            return tcs3400ReadGreen(sensorAddr)
+        } else if (currentSensor == SensorType.TCS3472) {
+            return tcs3472ReadGreen(sensorAddr)
+        }
+        return 0
+    }
+
+    function readBlueInternal(): number {
+        if (!sensorReady) return 0
+        if (!sensorDataValid()) return 0
+
+        if (currentSensor == SensorType.TCS3400) {
+            return tcs3400ReadBlue(sensorAddr)
+        } else if (currentSensor == SensorType.TCS3472) {
+            return tcs3472ReadBlue(sensorAddr)
+        }
+        return 0
+    }
+     ////////////////////////////////
+ //          Joystick        //
+ ////////////////////////////////
+
+  export enum Dir {
+    //% block="up"
+    Up = 0,
+    //% block="down"
+    Down = 1,
+    //% block="left"
+    Left = 2,
+    //% block="right"
+    Right = 3,
+    //% block="center"
+    Center = 4,
+    //% block="up left"
+    UpLeft = 5,
+    //% block="up right"
+    UpRight = 6,
+    //% block="down left"
+    DownLeft = 7,
+    //% block="down right"
+    DownRight = 8
+}
+
+    let baseP1 = 512
+    let baseP2 = 512
+    let initialized = false
+
+    const MOVE_THRESHOLD = 0.35
+    const SNAP_CENTER = 0.2
+
+    /**
+     * 校正搖桿中心點
+     */
+    //% weight=99 blockGap=8
+    //% block="calibrate joystick center"
+    //% subcategory="Add on pack 2"
+    //% group="Joystick"
+
+    export function calibrate() {
+
+        baseP1 = pins.analogReadPin(AnalogReadWritePin.P1)
+        baseP2 = pins.analogReadPin(AnalogReadWritePin.P2)
+
+        if (baseP1 < 100) baseP1 = 512
+        if (baseP2 < 100) baseP2 = 512
+
+        initialized = true
+    }
+
+    /**
+     * 取得方向（即時回中 + 8方向）
+     */
+    export function getDirection(): Dir {
+
+        if (!initialized) calibrate()
+
+        let p1 = pins.analogReadPin(AnalogReadWritePin.P1)
+        let p2 = pins.analogReadPin(AnalogReadWritePin.P2)
+
+        let dx = (p2 - baseP2) / baseP2
+        let dy = (p1 - baseP1) / baseP1
+
+        // ⭐ 吸附中心（避免抖動）
+        if (Math.abs(dx) < SNAP_CENTER) dx = 0
+        if (Math.abs(dy) < SNAP_CENTER) dy = 0
+
+        // =========================
+        // 🎯 即時中心判斷（無延遲）
+        // =========================
+        if (dx == 0 && dy == 0) {
+            return Dir.Center
+        }
+
+        // =========================
+        // 🎮 4方向
+        // =========================
+        if (dy > MOVE_THRESHOLD && dx == 0) return Dir.Up
+        if (dy < -MOVE_THRESHOLD && dx == 0) return Dir.Down
+        if (dx < -MOVE_THRESHOLD && dy == 0) return Dir.Left
+        if (dx > MOVE_THRESHOLD && dy == 0) return Dir.Right
+
+        // =========================
+        // 🎮 8方向
+        // =========================
+        if (dy > MOVE_THRESHOLD && dx > MOVE_THRESHOLD) return Dir.UpRight
+        if (dy > MOVE_THRESHOLD && dx < -MOVE_THRESHOLD) return Dir.UpLeft
+        if (dy < -MOVE_THRESHOLD && dx > MOVE_THRESHOLD) return Dir.DownRight
+        if (dy < -MOVE_THRESHOLD && dx < -MOVE_THRESHOLD) return Dir.DownLeft
+
+        return Dir.Center
+    }
+
+   /**
+ * IF 判斷用
+ */
+//% weight=98 blockGap=8
+//% block="joystick direction is %direction"
+//% direction.shadow="RoboticsWorkshop.Dir"
+//% subcategory="Add on pack 2"
+//% group="Joystick"
+export function isDirection(d: Dir): boolean {
+    return getDirection() == d
+}
+    /**
+     * 事件觸發
+     */
+    //% weight=97 blockGap=8
+    //% block="when joystick direction is %direction"
+    //% direction.shadow="RoboticsWorkshop.Dir"
+    //% subcategory="Add on pack 2"
+    //% group="Joystick"
+
+    export function onJoystick(direction: Dir, handler: () => void) {
+
+        control.inBackground(() => {
+
+            let lastState = Dir.Center
+
+            while (true) {
+
+                let current = getDirection()
+
+                if (current != lastState) {
+
+                    if (current == direction) {
+                        handler()
+                    }
+
+                    lastState = current
+                }
+
+                basic.pause(20)
+            }
+        })
+    }
+ 
 }

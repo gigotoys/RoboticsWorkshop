@@ -35,6 +35,24 @@
     "RoboticsWorkshop.ReadColorEqual|block": "読み取ったR %WriteRed|and G %WriteGreen|and B %WriteBlueに等しい %colorpart",
     "{id:group}Motor": "モーター",
     "{id:group}Ultrasonic Sensor": "超音波センサー",
-    "{id:group}Color Sensor": "カラーセンサー"
-}
+    "{id:group}Color Sensor": "カラーセンサー",
+    "{id:group}Joystick": "ジョイスティック",
 
+    "RoboticsWorkshop.Dir.Up|block": "上",
+    "RoboticsWorkshop.Dir.Down|block": "下",
+    "RoboticsWorkshop.Dir.Left|block": "左",
+    "RoboticsWorkshop.Dir.Right|block": "右",
+    "RoboticsWorkshop.Dir.Center|block": "中央",
+
+    "RoboticsWorkshop.Dir.UpLeft|block": "左上",
+    "RoboticsWorkshop.Dir.UpRight|block": "右上",
+
+    "RoboticsWorkshop.Dir.DownLeft|block": "左下",
+    "RoboticsWorkshop.Dir.DownRight|block": "右下",
+
+    "RoboticsWorkshop.calibrate|block": "ジョイスティック中心を調整",
+
+    "RoboticsWorkshop.isDirection|block": "ジョイスティック方向が %direction",
+
+    "RoboticsWorkshop.onJoystick|block": "ジョイスティック方向が %direction のとき"
+}

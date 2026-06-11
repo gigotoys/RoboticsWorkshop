@@ -35,5 +35,18 @@
     "RoboticsWorkshop.ReadColorEqual|block": "讀取紅 %WriteRed|和 綠 %WriteGreen|和 藍 %WriteBlue等於 %colorpart",
     "{id:group}Motor": "馬達",
     "{id:group}Ultrasonic Sensor": "超音波感測器",
-    "{id:group}Color Sensor": "顏色感測器"
+    "{id:group}Color Sensor": "顏色感測器",
+    "{id:group}Joystick": "搖桿",
+    "RoboticsWorkshop.Dir.Up|block": "上",
+    "RoboticsWorkshop.Dir.Down|block": "下",
+    "RoboticsWorkshop.Dir.Left|block": "左",
+    "RoboticsWorkshop.Dir.Right|block": "右",
+    "RoboticsWorkshop.Dir.Center|block": "中間",
+    "RoboticsWorkshop.Dir.UpLeft|block": "左上",
+    "RoboticsWorkshop.Dir.UpRight|block": "右上",
+    "RoboticsWorkshop.Dir.DownLeft|block": "左下",
+    "RoboticsWorkshop.Dir.DownRight|block": "右下",
+    "RoboticsWorkshop.calibrate|block": "校正搖桿中心",
+  "RoboticsWorkshop.isDirection|block": "搖桿方向是 %direction",
+"RoboticsWorkshop.onJoystick|block": "當搖桿方向是 %direction"
 }
